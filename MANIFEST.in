@@ -1,0 +1,4 @@
+global-exclude *.log *.pyc *.swp
+recursive-exclude sandbox
+recursive-include fixman/inventory *
+VERSION.txt

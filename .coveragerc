@@ -1,0 +1,8 @@
+[run]
+omit =
+    _scraps/*
+    assets/*
+    cli.py
+    docs/*
+    tmp/*
+    tmp.*
