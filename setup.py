@@ -22,16 +22,13 @@ setup(
     url='https://bitbucket.org/superdjango/django-fixman/',
     packages=find_packages(),
     include_package_data=True,
-    # install_requires=[
-    #     "awesome-slugify",
-    #     "opml",
-    #     "python-myninjas",
-    #     "markdown",
-    #     "pygments",
-    # ],
-    # dependency_links=[
-    #     "https://bitbucket.org/myninjas/python-myninjas/master.tgz",
-    # ],
+    install_requires=[
+        "python-myninjas",
+        "pygments",
+    ],
+    dependency_links=[
+        "https://bitbucket.org/myninjas/python-myninjas/master.tgz",
+    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',

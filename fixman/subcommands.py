@@ -7,6 +7,7 @@ from subprocess import getstatusoutput
 # from .library import Fixture
 from .library.commands import DumpData, LoadData
 from .constants import EXIT_ERROR, EXIT_OK, EXIT_UNKNOWN, LOGGER_NAME
+from .variables import CURRENT_WORKING_DIRECTORY
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -14,7 +15,7 @@ log = logging.getLogger(LOGGER_NAME)
 
 
 def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_foreign=False,
-             natural_primary=False, preview_enabled=False, settings=None):
+             natural_primary=False, preview_enabled=False, project_root=None, settings=None):
 
     if not os.path.exists(path):
         log.error("Path does not exist: %s" % path)
@@ -41,6 +42,7 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
             'model': model_name,
             'natural_foreign': natural_foreign,
             'natural_primary': natural_primary,
+            'project_root': project_root,
             'settings': settings
         }
 
@@ -71,11 +73,10 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
         dump = DumpData(
             f.app,
             database=f.database,
-            file_name=f.file_name,
-            model=f.model,
+            export=f.export,
             natural_foreign=f.natural_foreign,
             natural_primary=f.natural_primary,
-            path=f.path,
+            path=f.get_full_path(),
             settings=f.settings
         )
         if preview_enabled:
@@ -90,7 +91,8 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
     return EXIT_ERROR
 
 
-def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False, settings=None):
+def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False,
+             project_root=None, settings=None):
 
     if not os.path.exists(path):
         log.error("Path does not exist: %s" % path)
@@ -115,6 +117,7 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
             'database': database,
             'group': group,
             'model': model_name,
+            'project_root': project_root,
             'settings': settings
         }
 
@@ -145,9 +148,7 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
         load = LoadData(
             f.app,
             database=f.database,
-            file_name=f.file_name,
-            model=f.model,
-            path=f.path,
+            path=f.get_full_path(),
             settings=f.settings
         )
         if preview_enabled:
@@ -165,21 +166,47 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
 class FixtureFile(object):
 
     def __init__(self, app, comment=None, database=None, file_name=None, group=None, model=None,
-                 natural_foreign=False, natural_primary=False, path=None, readonly=False, settings=None):
+                 natural_foreign=False, natural_primary=False, path=None, project_root=None, readonly=False,
+                 settings=None):
         self.app = app
         self.comment = comment
         self.database = database
-        self.file_name = file_name
+        self.file_name = file_name or "initial.json"
         self.group = group
         self.model = model
         self.natural_foreign = natural_foreign
         self.natural_primary = natural_primary
-        self.path = path
         self.readonly = readonly
         self.settings = settings
 
+        if model is not None:
+            self.export = "%s.%s" % (app, model)
+
+            if file_name is None:
+                self.file_name = "%s.json" % model.lower()
+        else:
+            self.export = app
+
+        if path is not None:
+            self.path = path
+        else:
+            self.path = os.path.join("fixtures", app)
+
+        if project_root is not None:
+            self._full_path = os.path.join(project_root, self.path, self.file_name)
+        else:
+            self._full_path = os.path.join(self.path, self.file_name)
+
     def __repr__(self):
-        return "<%s %s>" %  (self.__class__.__name__, self.label)
+        return "<%s %s>" %  (self.__class__.__name__, self._full_path)
+
+    def get_full_path(self):
+        """Get the full path to the fixture file.
+
+        :rtype: str
+
+        """
+        return self._full_path
 
     @property
     def label(self):

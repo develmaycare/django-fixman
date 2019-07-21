@@ -1,10 +1,9 @@
 # Imports
 
-from configparser import ConfigParser
 import logging
 import os
 from subprocess import getstatusoutput
-from ..constants import EXIT_INPUT, EXIT_OK, EXIT_UNKNOWN, LOGGER_NAME
+from ..constants import EXIT_OK, LOGGER_NAME
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -13,30 +12,15 @@ log = logging.getLogger(LOGGER_NAME)
 
 class DumpData(object):
 
-    def __init__(self, app, database=None, file_name=None, model=None, natural_foreign=False,
-                 natural_primary=False, path=None, settings=None):
+    def __init__(self, app, database=None, export=None, natural_foreign=False, natural_primary=False, path=None,
+                 settings=None):
         self.app = app
         self.database = database
-        self.file_name = file_name or "initial.json"
-        self.model = model
+        self.export = export or app
         self.natural_foreign = natural_foreign
         self.natural_primary = natural_primary
+        self.path = path or os.path.join("../fixtures", app, "initial.json")
         self.settings = settings
-
-        if model is not None:
-            self.export = "%s.%s" % (app, model)
-
-            if file_name is None:
-                self.file_name = "%s.json" % model.lower()
-        else:
-            self.export = app
-
-        if path is not None:
-            self.path = path
-        else:
-            self.path = os.path.join("local", app, "fixtures")
-
-        self._full_path = os.path.join(self.path, self.file_name)
 
     def get_command(self):
         a = list()
@@ -57,7 +41,7 @@ class DumpData(object):
         if self.settings is not None:
             a.append("--settings=%s" % self.settings)
 
-        a.append("%s > %s)" % (self.export, self._full_path))
+        a.append("%s > %s)" % (self.export, self.path))
 
         return " ".join(a)
 
@@ -77,23 +61,11 @@ class DumpData(object):
 
 class LoadData(object):
 
-    def __init__(self, app, database=None, file_name=None, model=None, path=None, settings=None):
+    def __init__(self, app, database=None, path=None, settings=None):
         self.app = app
         self.database = database
-        self.file_name = file_name or "initial.json"
-        self.model = model
-        self.path = path
+        self.path = path or os.path.join("../fixtures", app, "initial.json")
         self.settings = settings
-
-        if model is not None and file_name is None:
-            self.file_name = "%s.json" % model.lower()
-
-        if path is not None:
-            self.path = path
-        else:
-            self.path = os.path.join("local", app, "fixtures")
-
-        self._full_path = os.path.join(self.path, self.file_name)
 
     def get_command(self):
         a = list()
@@ -106,7 +78,7 @@ class LoadData(object):
         if self.settings is not None:
             a.append("--settings=%s" % self.settings)
 
-        a.append("%s)" % self._full_path)
+        a.append("%s)" % self.path)
 
         return " ".join(a)
 
