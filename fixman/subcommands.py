@@ -2,12 +2,10 @@
 
 from configparser import ConfigParser
 import logging
-import os
-from subprocess import getstatusoutput
-# from .library import Fixture
+from myninjas.utils import read_file
 from .library.commands import DumpData, LoadData
 from .constants import EXIT_ERROR, EXIT_OK, EXIT_UNKNOWN, LOGGER_NAME
-from .variables import CURRENT_WORKING_DIRECTORY
+from .utils import filter_fixtures, highlight_code, load_fixtures, JSONLexer
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -17,58 +15,38 @@ log = logging.getLogger(LOGGER_NAME)
 def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_foreign=False,
              natural_primary=False, preview_enabled=False, project_root=None, settings=None):
 
-    if not os.path.exists(path):
-        log.error("Path does not exist: %s" % path)
-
-    ini = ConfigParser()
-    ini.read(path)
-
-    fixtures = list()
-    group = None
-    for section in ini.sections():
-        _section = section
-        if ":" in section:
-            _section, group = section.split(":")
-
-        if "." in _section:
-            app_label, model_name = _section.split(".")
-        else:
-            app_label = _section
-            model_name = None
-
-        kwargs = {
-            'database': database,
-            'group': group,
-            'model': model_name,
-            'natural_foreign': natural_foreign,
-            'natural_primary': natural_primary,
-            'project_root': project_root,
-            'settings': settings
-        }
-
-        for key, value in ini.items(section):
-            kwargs[key] = value
-
-        fixtures.append(FixtureFile(app_label, **kwargs))
+    fixtures = load_fixtures(
+        path,
+        database=database,
+        natural_foreign=natural_foreign,
+        natural_primary=natural_primary,
+        project_root=project_root,
+        settings=settings
+    )
+    if not fixtures:
+        return EXIT_ERROR
 
     success = list()
-    for f in fixtures:
+    _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models, skip_readonly=True)
+    for f in _fixtures:
 
-        if apps is not None and f.app not in apps:
-            log.debug("Skipping %s app (not in apps list)." % f.app)
-            continue
+        # if apps is not None and f.app not in apps:
+        #     log.debug("Skipping %s app (not in apps list)." % f.app)
+        #     continue
+        #
+        # if models is not None and f.model is not None and f.model not in models:
+        #     log.debug("Skipping %s model (not in models list)." % f.model)
+        #     continue
+        #
+        # if groups is not None and f.group not in groups:
+        #     log.debug("Skipping %s (not in group)." % f.label)
+        #     continue
+        #
+        # if f.readonly:
+        #     log.debug("Skipping %s (read only)." % f.label)
+        #     continue
 
-        if models is not None and f.model is not None and f.model not in models:
-            log.debug("Skipping %s model (not in models list)." % f.model)
-            continue
-
-        if groups is not None and f.group not in groups:
-            log.debug("Skipping %s (not in group)." % f.label)
-            continue
-
-        if f.readonly:
-            log.debug("Skipping %s (read only)." % f.label)
-            continue
+        log.info("Dumping fixtures to: %s" % f.get_full_path())
 
         dump = DumpData(
             f.app,
@@ -83,7 +61,10 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
             success.append(True)
             print(dump.preview())
         else:
-            success.append(dump.run())
+            if dump.run():
+                success.append(dump.run())
+            else:
+                log.error(dump.get_output())
             
     if all(success):
         return EXIT_OK
@@ -91,59 +72,56 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
     return EXIT_ERROR
 
 
+def inspect(path, apps=None, groups=None, models=None, project_root=None):
+    fixtures = load_fixtures(path, project_root=project_root)
+    if not fixtures:
+        return EXIT_ERROR
+
+    exit_code = EXIT_OK
+    _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models)
+    for f in _fixtures:
+        try:
+            content = read_file(f.get_full_path())
+        except FileNotFoundError as e:
+            exit_code = EXIT_UNKNOWN
+            content = str(e)
+
+        print("")
+        print(f.label)
+        print("-" * 120)
+        print(highlight_code(content, lexer=JSONLexer))
+        print("-" * 120)
+
+    return exit_code
+
+
 def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False,
              project_root=None, settings=None):
 
-    if not os.path.exists(path):
-        log.error("Path does not exist: %s" % path)
-
-    ini = ConfigParser()
-    ini.read(path)
-
-    fixtures = list()
-    group = None
-    for section in ini.sections():
-        _section = section
-        if ":" in section:
-            _section, group = section.split(":")
-
-        if "." in _section:
-            app_label, model_name = _section.split(".")
-        else:
-            app_label = _section
-            model_name = None
-
-        kwargs = {
-            'database': database,
-            'group': group,
-            'model': model_name,
-            'project_root': project_root,
-            'settings': settings
-        }
-
-        for key, value in ini.items(section):
-            kwargs[key] = value
-
-        fixtures.append(FixtureFile(app_label, **kwargs))
+    fixtures = load_fixtures(path, database=database, project_root=project_root, settings=settings)
+    if not fixtures:
+        return EXIT_ERROR
 
     success = list()
-    for f in fixtures:
+    _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models)
+    for f in _fixtures:
 
-        if apps is not None and f.app not in apps:
-            log.debug("Skipping %s app (not in apps list)." % f.app)
-            continue
-
-        if models is not None and f.model is not None and f.model not in models:
-            log.debug("Skipping %s model (not in models list)." % f.model)
-            continue
-
-        if groups is not None and f.group not in groups:
-            log.debug("Skipping %s (not in group)." % f.label)
-            continue
-
-        if f.readonly:
-            log.debug("Skipping %s (read only)." % f.label)
-            continue
+        # if apps is not None and f.app not in apps:
+        #     log.debug("Skipping %s app (not in apps list)." % f.app)
+        #     continue
+        #
+        # if models is not None and f.model is not None and f.model not in models:
+        #     log.debug("Skipping %s model (not in models list)." % f.model)
+        #     continue
+        #
+        # if groups is not None and f.group not in groups:
+        #     log.debug("Skipping %s (not in group)." % f.label)
+        #     continue
+        #
+        # if f.readonly:
+        #     log.debug("Skipping %s (read only)." % f.label)
+        #     continue
+        log.info("Loading fixtures from: %s" % f.get_full_path())
 
         load = LoadData(
             f.app,
@@ -155,70 +133,16 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
             success.append(True)
             print(load.preview())
         else:
-            success.append(load.run())
+            if load.run():
+                success.append(load.run())
+            else:
+                log.error(load.get_output())
+
 
     if all(success):
         return EXIT_OK
 
     return EXIT_ERROR
-
-
-class FixtureFile(object):
-
-    def __init__(self, app, comment=None, database=None, file_name=None, group=None, model=None,
-                 natural_foreign=False, natural_primary=False, path=None, project_root=None, readonly=False,
-                 settings=None):
-        self.app = app
-        self.comment = comment
-        self.database = database
-        self.file_name = file_name or "initial.json"
-        self.group = group
-        self.model = model
-        self.natural_foreign = natural_foreign
-        self.natural_primary = natural_primary
-        self.readonly = readonly
-        self.settings = settings
-
-        if model is not None:
-            self.export = "%s.%s" % (app, model)
-
-            if file_name is None:
-                self.file_name = "%s.json" % model.lower()
-        else:
-            self.export = app
-
-        if path is not None:
-            self.path = path
-        else:
-            self.path = os.path.join("fixtures", app)
-
-        if project_root is not None:
-            self._full_path = os.path.join(project_root, self.path, self.file_name)
-        else:
-            self._full_path = os.path.join(self.path, self.file_name)
-
-    def __repr__(self):
-        return "<%s %s>" %  (self.__class__.__name__, self._full_path)
-
-    def get_full_path(self):
-        """Get the full path to the fixture file.
-
-        :rtype: str
-
-        """
-        return self._full_path
-
-    @property
-    def label(self):
-        """Get a display name for the fixture.
-
-        :rtype: str
-
-        """
-        if self.model is not None:
-            return "%s.%s" % (self.app, self.model)
-
-        return self.app
 
 '''
 

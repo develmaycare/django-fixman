@@ -51,7 +51,7 @@ Work with Django fixtures.
     subparsers = parser.add_subparsers(
         dest="subcommand",
         help="Commands",
-        metavar="dumpdata, loaddata"
+        metavar="dumpdata, inspect, loaddata"
     )
 
     initialize.subcommands(subparsers)
@@ -68,6 +68,7 @@ Work with Django fixtures.
     log.debug("Namespace: %s" % args)
 
     project_root = args.project_root or CURRENT_WORKING_DIRECTORY
+    log.debug("Project root: %s" % project_root)
 
     exit_code = EXIT_UNKNOWN
     if command in ("dd", "dump", "dumpdata"):
@@ -77,6 +78,14 @@ Work with Django fixtures.
             groups=args.group_names,
             models=args.model_names,
             preview_enabled=args.preview_enabled,
+            project_root=project_root
+        )
+    elif command in ("ins", "inspect"):
+        exit_code = subcommands.inspect(
+            args.path,
+            apps=args.app_names,
+            groups=args.group_names,
+            models=args.model_names,
             project_root=project_root
         )
     elif command in ("ld", "load", "loaddata"):

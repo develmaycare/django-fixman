@@ -21,6 +21,8 @@ class DumpData(object):
         self.natural_primary = natural_primary
         self.path = path or os.path.join("../fixtures", app, "initial.json")
         self.settings = settings
+        self._output = None
+        self._status = None
 
     def get_command(self):
         a = list()
@@ -45,15 +47,18 @@ class DumpData(object):
 
         return " ".join(a)
 
+    def get_output(self):
+        return self._output
+
     def preview(self):
         return self.get_command()
 
     def run(self):
         command = self.get_command()
 
-        status, output = getstatusoutput(command)
+        self._status, self._output = getstatusoutput(command)
 
-        if status > EXIT_OK:
+        if self._status > EXIT_OK:
             return False
 
         return True
@@ -66,6 +71,8 @@ class LoadData(object):
         self.database = database
         self.path = path or os.path.join("../fixtures", app, "initial.json")
         self.settings = settings
+        self._output = None
+        self._status = None
 
     def get_command(self):
         a = list()
@@ -82,15 +89,18 @@ class LoadData(object):
 
         return " ".join(a)
 
+    def get_output(self):
+        return self._output
+
     def preview(self):
         return self.get_command()
 
     def run(self):
         command = self.get_command()
 
-        status, output = getstatusoutput(command)
+        self._status, self._output = getstatusoutput(command)
 
-        if status > EXIT_OK:
+        if self._status > EXIT_OK:
             return False
 
         return True

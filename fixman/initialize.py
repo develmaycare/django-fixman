@@ -13,6 +13,7 @@ log = logging.getLogger(LOGGER_NAME)
 def subcommands(subparsers):
     commands = SubCommands(subparsers)
     commands.dumpdata()
+    commands.inspect()
     commands.loaddata()
 
 # Classes
@@ -29,7 +30,17 @@ class SubCommands(object):
         sub = self.subparsers.add_parser(
             "dumpdata",
             aliases=["dd", "dump"],
-            help="Output Django fixtures."
+            help="Export Django fixtures."
+        )
+
+        self._add_common_options(sub)
+
+    def inspect(self):
+        """Create the inspect sub-command."""
+        sub = self.subparsers.add_parser(
+            "inspect",
+            aliases=["ins"],
+            help="Display Django fixtures."
         )
 
         self._add_common_options(sub)
@@ -86,9 +97,9 @@ class SubCommands(object):
         sub.add_argument(
             "-P=",
             "--path=",
-            default="fixtures/load.ini",
+            default="fixtures/config.ini",
             dest="path",
-            help="The path to the fixtures.ini file. Default: fixtures/load.ini"
+            help="The path to the fixtures INI file. Default: fixtures/config.ini"
         )
 
         sub.add_argument(
