@@ -42,6 +42,14 @@ class FixtureFile(object):
     def __repr__(self):
         return "<%s %s>" %  (self.__class__.__name__, self._full_path)
 
+    def get_path(self):
+        """Get the path to the fixture file (without the file).
+
+        :rtype: str
+
+        """
+        return os.path.dirname(self._full_path)
+
     def get_full_path(self):
         """Get the full path to the fixture file.
 
