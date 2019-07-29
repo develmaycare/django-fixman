@@ -53,6 +53,14 @@ class SubCommands(object):
             help="Load Django fixtures."
         )
 
+        sub.add_argument(
+            "-S",
+            "--script",
+            action="store_true",
+            dest="to_script",
+            help="Export to a bash script."
+        )
+
         self._add_common_options(sub)
 
     # noinspection PyMethodMayBeStatic

@@ -19,13 +19,13 @@ def main_command():
     """Work with Django fixtures."""
 
     __author__ = "Shawn Davis <shawn@develmaycare.com>"
-    __date__ = "2019-07-23"
+    __date__ = "2019-07-29"
     __help__ = """NOTES
 
 Work with Django fixtures.
 
     """
-    __version__ = "0.5.1-d"
+    __version__ = "0.5.2-d"
 
     # Main argument parser from which sub-commands are created.
     parser = ArgumentParser(description=__doc__, epilog=__help__, formatter_class=RawDescriptionHelpFormatter)
@@ -78,7 +78,8 @@ Work with Django fixtures.
             groups=args.group_names,
             models=args.model_names,
             preview_enabled=args.preview_enabled,
-            project_root=project_root
+            project_root=project_root,
+            settings=args.settings
         )
     elif command in ("ins", "inspect"):
         exit_code = subcommands.inspect(
@@ -95,7 +96,9 @@ Work with Django fixtures.
             groups=args.group_names,
             models=args.model_names,
             preview_enabled=args.preview_enabled,
-            project_root=project_root
+            project_root=project_root,
+            settings=args.settings,
+            to_script=args.to_script
         )
     else:
         log.error("Unsupported command: %s" % command)

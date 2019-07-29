@@ -102,31 +102,20 @@ def inspect(path, apps=None, groups=None, models=None, project_root=None):
 
 
 def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False,
-             project_root=None, settings=None):
+             project_root=None, settings=None, to_script=False):
 
     fixtures = load_fixtures(path, database=database, project_root=project_root, settings=settings)
     if not fixtures:
         return EXIT_ERROR
 
+    if to_script:
+        script = list()
+        script.append("!# /usr/bin/env bash")
+        script.append("")
+
     success = list()
     _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models)
     for f in _fixtures:
-
-        # if apps is not None and f.app not in apps:
-        #     log.debug("Skipping %s app (not in apps list)." % f.app)
-        #     continue
-        #
-        # if models is not None and f.model is not None and f.model not in models:
-        #     log.debug("Skipping %s model (not in models list)." % f.model)
-        #     continue
-        #
-        # if groups is not None and f.group not in groups:
-        #     log.debug("Skipping %s (not in group)." % f.label)
-        #     continue
-        #
-        # if f.readonly:
-        #     log.debug("Skipping %s (read only)." % f.label)
-        #     continue
         log.info("Loading fixtures from: %s" % f.get_full_path())
 
         load = LoadData(
@@ -135,6 +124,12 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
             path=f.get_full_path(),
             settings=f.settings
         )
+
+        if to_script:
+            # noinspection PyUnboundLocalVariable
+            script.append(load.preview())
+            continue
+
         if preview_enabled:
             success.append(True)
             print(load.preview())
@@ -144,6 +139,10 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
             else:
                 log.error(load.get_output())
 
+    if to_script:
+        script.append("")
+        print("\n".join(script))
+        return EXIT_OK
 
     if all(success):
         return EXIT_OK
