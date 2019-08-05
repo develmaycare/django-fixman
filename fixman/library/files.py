@@ -7,11 +7,12 @@ import os
 
 class FixtureFile(object):
 
-    def __init__(self, app, comment=None, database=None, file_name=None, group=None, model=None,
+    def __init__(self, app, comment=None, copy_to=None, database=None, file_name=None, group=None, model=None,
                  natural_foreign=False, natural_primary=False, path=None, project_root=None, readonly=False,
                  settings=None):
         self.app = app
         self.comment = comment
+        self.copy_to = copy_to
         self.database = database
         self.file_name = file_name or "initial.json"
         self.group = group

@@ -12,8 +12,8 @@ log = logging.getLogger(LOGGER_NAME)
 
 class DumpData(object):
 
-    def __init__(self, app, database=None, export=None, natural_foreign=False, natural_primary=False, path=None,
-                 settings=None):
+    def __init__(self, app, database=None, export=None, natural_foreign=False, natural_primary=False,
+                 path=None, settings=None):
         self.app = app
         self.database = database
         self.export = export or app
@@ -43,6 +43,14 @@ class DumpData(object):
         if self.settings is not None:
             a.append("--settings=%s" % self.settings)
 
+        # if self.copy_to is not None:
+        #     a.append("%s > %s && cp %s %s" % (
+        #         self.export,
+        #         self.path,
+        #         self.path,
+        #         self.copy_to
+        #     ))
+        # else:
         a.append("%s > %s)" % (self.export, self.path))
 
         return " ".join(a)

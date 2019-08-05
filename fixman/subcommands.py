@@ -2,6 +2,8 @@
 
 from configparser import ConfigParser
 import logging
+from subprocess import getstatusoutput
+
 from myninjas.utils import read_file
 import os
 from .library.commands import DumpData, LoadData
@@ -62,13 +64,20 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
             success.append(True)
             if not os.path.exists(f.get_path()):
                 print("mkdir -p %s" % f.get_path())
+
             print(dump.preview())
+
+            if f.copy_to is not None:
+                print("cp %s %s" % (f.get_full_path(), f.copy_to))
         else:
             if not os.path.exists(f.get_path()):
                 os.makedirs(f.get_path())
 
             if dump.run():
                 success.append(dump.run())
+
+                if f.copy_to is not None:
+                    getstatusoutput("cp %s %s" % (f.get_full_path(), f.copy_to))
             else:
                 log.error(dump.get_output())
             
