@@ -30,15 +30,17 @@ class FixtureFile(object):
         else:
             self.export = app
 
+        source = ""
         if path is not None:
+            source = "source"
             self.path = path
         else:
             self.path = os.path.join("fixtures", app)
 
         if project_root is not None:
-            self._full_path = os.path.join(project_root, self.path, self.file_name)
+            self._full_path = os.path.join(project_root, source, self.path, self.file_name)
         else:
-            self._full_path = os.path.join(self.path, self.file_name)
+            self._full_path = os.path.join(source, self.path, self.file_name)
 
     def __repr__(self):
         return "<%s %s>" %  (self.__class__.__name__, self._full_path)
