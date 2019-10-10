@@ -3,6 +3,7 @@
 from configparser import ConfigParser
 import logging
 import os
+from myninjas.utils import smart_cast
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import get_formatter_by_name
@@ -109,7 +110,16 @@ def load_fixtures(path, **kwargs):
         _kwargs['model'] = model_name
 
         for key, value in ini.items(section):
-            _kwargs[key] = value
+            if key == "db":
+                key = "database"
+            elif key == "nfk":
+                key = "natural_foreign"
+            elif key == "npk":
+                key = "natural_primary"
+            else:
+                pass
+
+            _kwargs[key] = smart_cast(value)
 
         fixtures.append(FixtureFile(app_label, **_kwargs))
 
