@@ -2,10 +2,8 @@
 Fixtures
 ********
 
-Config File
-===========
-
-The ``fixtures/config.ini`` file contains instructions for how fixtures may be exported or imported. Each section represents either an app or a specific model. For example, a customers app is managed with  ``[customers]`` while the customer model would be specified as ``[customers.Customer]``.
+Managing Fixtures
+=================
 
 Fixture Files
 -------------
@@ -14,8 +12,13 @@ When a model is specified, the default location of fixtures files is ``<project_
 
 The ``file_name`` and ``path`` options (below) may be used to override the default.
 
+Config File
+-----------
+
+The ``fixtures/config.ini`` file contains instructions for how fixtures may be exported or imported. Each section represents either an app or a specific model. For example, a customers app is managed with  ``[customers]`` while the customer model would be specified as ``[customers.Customer]``.
+
 Additional Options
-------------------
+..................
 
 Simply specifying a section is enough to dump and load fixture files. However, there are some additional options that may be specified with the section to control these behaviors.
 
@@ -49,7 +52,7 @@ An example ``config.ini`` file:
     path = local/sales/fixtures
 
 Specifying a Fixture Group
---------------------------
+..........................
 
 It is possible to specify a logical group into which fixtures are organized. This is done by adding ``:group_name`` to the section. The ``-G`` or ``--group-name`` may be used to filter by group.
 
@@ -61,3 +64,8 @@ Specifying a grouping:
     ; ...
 
 This allows fixtures for the same app or model to be specified multiple times for different purposes; defaults, examples, or by deployment environment.
+
+Generating Fixtures
+===================
+
+TODO
