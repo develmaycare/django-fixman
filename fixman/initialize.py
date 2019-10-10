@@ -13,6 +13,7 @@ log = logging.getLogger(LOGGER_NAME)
 def subcommands(subparsers):
     commands = SubCommands(subparsers)
     commands.dumpdata()
+    commands.init()
     commands.inspect()
     commands.loaddata()
 
@@ -34,6 +35,36 @@ class SubCommands(object):
         )
 
         self._add_common_options(sub)
+
+    def init(self):
+        """Create the init sub-command."""
+        sub = self.subparsers.add_parser(
+            "init",
+            help="Initialize fixture management."
+        )
+
+        sub.add_argument(
+            "-D",
+            "--debug",
+            action="store_true",
+            dest="debug_enabled",
+            help="Enable debug output."
+        )
+
+        sub.add_argument(
+            "-p",
+            "--preview",
+            action="store_true",
+            dest="preview_enabled",
+            help="Preview the commands."
+        )
+
+        sub.add_argument(
+            "-r=",
+            "--project-root=",
+            dest="project_root",
+            help="The path to the project."
+        )
 
     def inspect(self):
         """Create the inspect sub-command."""

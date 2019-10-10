@@ -1,11 +1,9 @@
 # Imports
 
-from configparser import ConfigParser
 import logging
-from subprocess import getstatusoutput
-
-from myninjas.utils import read_file
+from myninjas.utils import read_file, write_file
 import os
+from subprocess import getstatusoutput
 from .library.commands import DumpData, LoadData
 from .constants import EXIT_ERROR, EXIT_OK, EXIT_UNKNOWN, LOGGER_NAME
 from .utils import filter_fixtures, highlight_code, load_fixtures, JSONLexer
@@ -85,6 +83,56 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
         return EXIT_OK
 
     return EXIT_ERROR
+
+
+def init(preview_enabled=False, project_root=None):
+    path = os.path.join(project_root, "source")
+    if not os.path.exists(path):
+        log.error("Path does not exist: %s" % path)
+        return EXIT_ERROR
+
+    log.info("Scanning the project for fixture files.")
+    a = list()
+    exit_code = EXIT_OK
+    for root, directories, files in os.walk(path):
+        for f in files:
+            if not f.endswith(".json"):
+                continue
+
+            relative_path = root.replace(path + "/", "")
+            # print(root.replace(path + "/", ""), f)
+
+            app_name = os.path.basename(os.path.dirname(relative_path))
+
+            log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, f))
+
+            a.append("[%s]" % app_name)
+            a.append("file_name = %s" % f)
+            a.append("path = %s" % relative_path)
+            a.append("")
+
+    base_path = os.path.join(project_root, "fixtures")
+    if not os.path.exists(base_path):
+        log.info("Creating fixtures directory.")
+        if not preview_enabled:
+            os.makedirs(base_path)
+
+    config_path = os.path.join(base_path, "config.ini")
+    if os.path.exists(config_path):
+        log.warning("A fixtures/config.ini already exists. Use the -p switch to copy and paste the results of "
+                    "the scan.")
+    else:
+        log.info("Writing config.ini file.")
+        if not preview_enabled:
+            write_file(config_path, content="\n".join(a))
+
+    if preview_enabled:
+        print("\n".join(a))
+
+    log.warning("Fixture entries may not exist in the correct order for loading. Please double-check and change "
+                "as needed.")
+
+    return exit_code
 
 
 def inspect(path, apps=None, groups=None, models=None, project_root=None):

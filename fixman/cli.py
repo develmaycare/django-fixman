@@ -51,7 +51,7 @@ Work with Django fixtures.
     subparsers = parser.add_subparsers(
         dest="subcommand",
         help="Commands",
-        metavar="dumpdata, inspect, loaddata"
+        metavar="dumpdata, init, inspect, loaddata"
     )
 
     initialize.subcommands(subparsers)
@@ -81,6 +81,8 @@ Work with Django fixtures.
             project_root=project_root,
             settings=args.settings
         )
+    elif command == "init":
+        exit_code = subcommands.init(preview_enabled=args.preview_enabled, project_root=project_root)
     elif command in ("ins", "inspect"):
         exit_code = subcommands.inspect(
             args.path,
