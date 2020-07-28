@@ -18,16 +18,15 @@ setup(
     description=read("DESCRIPTION.txt"),
     long_description=read("README.markdown"),
     author='Shawn Davis',
-    author_email='shawn@superdjango.com',
+    author_email='shawn@develmaycare.com',
     url='https://bitbucket.org/superdjango/django-fixman/',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "python-myninjas",
-        "pygments",
+        "superpython",
     ],
     dependency_links=[
-        "https://bitbucket.org/myninjas/python-myninjas/master.tgz",
+        "https://github.com/develmaycare/superpython",
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -36,8 +35,8 @@ setup(
         'License :: OSI Approved :: BSD3 License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     zip_safe=False,
     tests_require=[
