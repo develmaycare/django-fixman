@@ -1,10 +1,5 @@
 # Imports
 
-import logging
-from .constants import LOGGER_NAME
-
-log = logging.getLogger(LOGGER_NAME)
-
 # Exports
 
 # Functions
@@ -38,6 +33,8 @@ class SubCommands(object):
 
     def init(self):
         """Create the init sub-command."""
+        # Arguments do NOT use _add_common_options() because this sub-command doesn't utilize the common options for
+        # dump, load, etc. So common options such as -D and -p have to be added here.
         sub = self.subparsers.add_parser(
             "init",
             help="Initialize fixture management."
@@ -49,6 +46,15 @@ class SubCommands(object):
             action="store_true",
             dest="debug_enabled",
             help="Enable debug output."
+        )
+
+        sub.add_argument(
+            "-F",
+            "--force-it",
+            action="store_true",
+            dest="force_enabled",
+            help="Force initialization (and scanning with -S) even if an existing configuration exists. This will "
+                 "overwrite your current config.ini file."
         )
 
         sub.add_argument(
@@ -64,6 +70,14 @@ class SubCommands(object):
             "--project-root=",
             dest="project_root",
             help="The path to the project."
+        )
+
+        sub.add_argument(
+            "-S",
+            "--scan",
+            action="store_true",
+            dest="scan_enabled",
+            help="Scan the current directory (or project root) to find fixture files to be added to the config."
         )
 
     def inspect(self):
@@ -136,9 +150,9 @@ class SubCommands(object):
         sub.add_argument(
             "-P=",
             "--path=",
-            default="fixtures/config.ini",
+            default="deploy/fixtures/config.ini",
             dest="path",
-            help="The path to the fixtures INI file. Default: fixtures/config.ini"
+            help="The path to the fixtures INI file. Default: deploy/fixtures/config.ini"
         )
 
         sub.add_argument(

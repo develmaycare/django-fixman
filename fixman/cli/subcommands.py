@@ -1,20 +1,21 @@
 # Imports
 
 import logging
-from myninjas.utils import read_file, write_file
 import os
+from superpython.shell import EXIT
+from superpython.utils import highlight_code, read_file, write_file
 from subprocess import getstatusoutput
-from .library.commands import DumpData, LoadData
-from .constants import EXIT_ERROR, EXIT_OK, EXIT_UNKNOWN, LOGGER_NAME
-from .utils import filter_fixtures, highlight_code, load_fixtures, JSONLexer
+from ..library.commands import DumpData, LoadData
+from ..constants import LOGGER_NAME
+from ..utils import filter_fixtures, load_fixtures
 
 log = logging.getLogger(LOGGER_NAME)
 
 # Functions
 
 
-def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_foreign=False,
-             natural_primary=False, preview_enabled=False, project_root=None, settings=None):
+def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_foreign=False, natural_primary=False,
+             preview_enabled=False, project_root=None, settings=None):
 
     fixtures = load_fixtures(
         path,
@@ -25,28 +26,11 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
         settings=settings
     )
     if not fixtures:
-        return EXIT_ERROR
+        return EXIT.ERROR
 
     success = list()
     _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models, skip_readonly=True)
     for f in _fixtures:
-
-        # if apps is not None and f.app not in apps:
-        #     log.debug("Skipping %s app (not in apps list)." % f.app)
-        #     continue
-        #
-        # if models is not None and f.model is not None and f.model not in models:
-        #     log.debug("Skipping %s model (not in models list)." % f.model)
-        #     continue
-        #
-        # if groups is not None and f.group not in groups:
-        #     log.debug("Skipping %s (not in group)." % f.label)
-        #     continue
-        #
-        # if f.readonly:
-        #     log.debug("Skipping %s (read only)." % f.label)
-        #     continue
-
         log.info("Dumping fixtures to: %s" % f.get_full_path())
 
         dump = DumpData(
@@ -80,90 +64,105 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
                 log.error(dump.get_output())
             
     if all(success):
-        return EXIT_OK
+        return EXIT.OK
 
-    return EXIT_ERROR
+    return EXIT.ERROR
 
 
-def init(preview_enabled=False, project_root=None):
-    path = os.path.join(project_root, "source")
-    if not os.path.exists(path):
-        log.error("Path does not exist: %s" % path)
-        return EXIT_ERROR
+def init(force_enabled=False, preview_enabled=False, project_root=None, scan_enabled=False):
+    # The base path is where global fixtures and the config.ini file are located.
+    base_path = os.path.join(project_root, "deploy", "fixtures")
 
-    log.info("Scanning the project for fixture files.")
-    a = list()
-    exit_code = EXIT_OK
-    for root, directories, files in os.walk(path):
-        for f in files:
-            if not f.endswith(".json"):
-                continue
-
-            relative_path = root.replace(path + "/", "")
-            # print(root.replace(path + "/", ""), f)
-
-            app_name = os.path.basename(os.path.dirname(relative_path))
-
-            log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, f))
-
-            a.append("[%s]" % app_name)
-            a.append("file_name = %s" % f)
-            a.append("path = %s" % relative_path)
-            a.append("")
-
-    base_path = os.path.join(project_root, "fixtures")
     if not os.path.exists(base_path):
         log.info("Creating fixtures directory.")
         if not preview_enabled:
             os.makedirs(base_path)
 
+    # The path to the config.ini file.
     config_path = os.path.join(base_path, "config.ini")
-    if os.path.exists(config_path):
-        log.warning("A fixtures/config.ini already exists. Use the -p switch to copy and paste the results of "
-                    "the scan.")
+
+    if os.path.exists(config_path) and not force_enabled:
+        log.warning("A %s file already exists. Use the -F switch to force initialization (and scanning if "
+                    "using -S). Alternatively, use the -p switch to copy and paste the results of the "
+                    "init." % config_path)
+
+        return EXIT.TEMP
+
+    # Output for the config is collected in a list with or without scan_enabled.
+    output = list()
+
+    # Scan for fixture files.
+    if scan_enabled:
+        path = os.path.join(project_root, "source")
+        if not os.path.exists(path):
+            log.error("Path does not exist: %s" % path)
+            return EXIT.ERROR
+
+        log.info("Scanning the project for fixture files.")
+        for root, directories, files in os.walk(path):
+            for f in files:
+                if not f.endswith(".json"):
+                    continue
+
+                relative_path = root.replace(path + "/", "")
+                # print(root.replace(path + "/", ""), f)
+
+                app_name = os.path.basename(os.path.dirname(relative_path))
+
+                log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, f))
+
+                output.append("[%s]" % app_name)
+                output.append("file_name = %s" % f)
+                output.append("path = %s" % relative_path)
+                output.append("")
     else:
-        log.info("Writing config.ini file.")
-        if not preview_enabled:
-            write_file(config_path, content="\n".join(a))
+        output.append(";[app_name]")
+        output.append(";file_name = fixture-file-name.json")
+        output.append("")
 
     if preview_enabled:
-        print("\n".join(a))
+        print("\n".join(output))
+        return EXIT.OK
 
-    log.warning("Fixture entries may not exist in the correct order for loading. Please double-check and change "
-                "as needed.")
+    log.info("Writing config.ini file.")
+    write_file(config_path, content="\n".join(output))
 
-    return exit_code
+    if scan_enabled:
+        log.warning("Fixture entries may not exist in the correct order for loading. Please double-check and change "
+                    "as needed.")
+
+    return EXIT.OK
 
 
 def inspect(path, apps=None, groups=None, models=None, project_root=None):
     fixtures = load_fixtures(path, project_root=project_root)
     if not fixtures:
-        return EXIT_ERROR
+        return EXIT.ERROR
 
-    exit_code = EXIT_OK
+    exit_code = EXIT.OK
     _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models)
     for f in _fixtures:
         try:
             content = read_file(f.get_full_path())
         except FileNotFoundError as e:
-            exit_code = EXIT_UNKNOWN
+            exit_code = EXIT.IO
             content = str(e)
 
         print("")
         print(f.label)
         print("-" * 120)
-        print(highlight_code(content, lexer=JSONLexer))
+        print(highlight_code(content, language="json"))
         print("-" * 120)
 
     return exit_code
 
 
-def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False,
-             project_root=None, settings=None, to_script=False):
+def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False, project_root=None,
+             settings=None, to_script=False):
 
     fixtures = load_fixtures(path, database=database, project_root=project_root, settings=settings)
     if not fixtures:
-        return EXIT_ERROR
+        return EXIT.ERROR
 
     if to_script:
         script = list()
@@ -199,12 +198,12 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
     if to_script:
         script.append("")
         print("\n".join(script))
-        return EXIT_OK
+        return EXIT.OK
 
     if all(success):
-        return EXIT_OK
+        return EXIT.OK
 
-    return EXIT_ERROR
+    return EXIT.ERROR
 
 '''
 
@@ -266,9 +265,9 @@ def dumpdata(args):
                 logger.info("(OK) %s" % fixture.model)
             else:
                 logger.info("(FAILED) %s %s" % (fixture.model, fixture.output))
-                return EXIT_UNKNOWN
+                return EXIT.UNKNOWN
 
-    return EXIT_OK
+    return EXIT.OK
 
 
 def loaddata(args):
@@ -321,7 +320,7 @@ def loaddata(args):
                 logger.info("(OK) %s %s" % (fixture.model, fixture.output))
             else:
                 logger.warning("(FAILED) %s %s" % (fixture.model, fixture.output))
-                return EXIT_UNKNOWN
+                return EXIT.UNKNOWN
 
-    return EXIT_OK
+    return EXIT.OK
 '''

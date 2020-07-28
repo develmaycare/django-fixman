@@ -1,9 +1,9 @@
 # Imports
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from myninjas.logging import LoggingHelper
-from .constants import EXIT_FAILURE, EXIT_UNKNOWN, LOGGER_NAME
-from .variables import CURRENT_WORKING_DIRECTORY
+from superpython.logging import LoggingHelper
+from ..constants import EXIT_FAILURE, EXIT_UNKNOWN, LOGGER_NAME
+from ..variables import CURRENT_WORKING_DIRECTORY
 from . import initialize
 from . import subcommands
 
@@ -19,13 +19,13 @@ def main_command():
     """Work with Django fixtures."""
 
     __author__ = "Shawn Davis <shawn@develmaycare.com>"
-    __date__ = "2019-07-29"
+    __date__ = "2020-07-28"
     __help__ = """NOTES
 
 Work with Django fixtures.
 
     """
-    __version__ = "0.5.2-d"
+    __version__ = "0.10.0-d"
 
     # Main argument parser from which sub-commands are created.
     parser = ArgumentParser(description=__doc__, epilog=__help__, formatter_class=RawDescriptionHelpFormatter)
@@ -82,7 +82,12 @@ Work with Django fixtures.
             settings=args.settings
         )
     elif command == "init":
-        exit_code = subcommands.init(preview_enabled=args.preview_enabled, project_root=project_root)
+        exit_code = subcommands.init(
+            force_enabled=args.force_enabled,
+            preview_enabled=args.preview_enabled,
+            project_root=project_root,
+            scan_enabled=args.scan_enabled
+        )
     elif command in ("ins", "inspect"):
         exit_code = subcommands.inspect(
             args.path,
