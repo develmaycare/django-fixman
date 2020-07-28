@@ -2,14 +2,63 @@
 
 import os
 
+# Exports
+
+__all__ = (
+    "FixtureFile",
+)
+
 # Classes
 
 
 class FixtureFile(object):
+    """Represents a fixture file."""
 
     def __init__(self, app, comment=None, copy_to=None, database=None, file_name=None, group=None, model=None,
                  natural_foreign=False, natural_primary=False, path=None, project_root=None, readonly=False,
                  settings=None):
+        """Initialize a fixture file.
+
+        :param app: The name of the app to which the fixture file belongs.
+        :type app: str
+
+        :param comment: A comment regarding the fixture file.
+        :type comment: str
+
+        :param copy_to: The path to which the fixture file should be copied.
+        :type copy_to: str
+
+        :param database: The database name into which the fixtures are installed.
+        :type database: str
+
+        :param file_name: The file name of the file.
+        :type file_name: str
+
+        :param group: The group into which the fixtures are organized.
+        :type group: str
+
+        :param model: The name of the model to which the fixtures apply.
+        :type model: str
+
+        :param natural_foreign: Indicates whether natural foreign keys are used.
+        :type natural_foreign: bool
+
+        :param natural_primary: Indicates whether natural primary keys are used.
+        :type natural_primary: bool
+
+        :param path: The path to the fixture file, excluding the file name.
+        :type path: str
+
+        :param project_root: The root (path) of the project where the fixture is used.
+        :type project_root: str
+
+        :param readonly: Indicates the fixture file may only be loaded (not dumped).
+        :type readonly: bool
+
+        :param settings: The settings to use when loading or dumping data.
+        :type settings: str
+
+        """
         self.app = app
         self.comment = comment
         self.copy_to = copy_to

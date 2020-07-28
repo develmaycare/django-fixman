@@ -3,15 +3,8 @@
 from configparser import ConfigParser
 import logging
 import os
-from myninjas.utils import smart_cast
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import get_formatter_by_name
+from superpython.utils import smart_cast
 from .constants import LOGGER_NAME
-
-JSONLexer = get_lexer_by_name("json")
-PythonLexer = get_lexer_by_name("python")
-TerminalFormatter = get_formatter_by_name("terminal", linenos=True)
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -19,18 +12,34 @@ log = logging.getLogger(LOGGER_NAME)
 
 __all__ = (
     "filter_fixtures",
-    "highlight_code",
     "load_fixtures",
-    "JSONLexer",
-    "PythonLexer",
-    "TerminalFormatter",
 )
 
 # Functions
 
 
 def filter_fixtures(fixtures, apps=None, groups=None, models=None, skip_readonly=False):
+    """Filter fixtures for various criteria.
 
+    :param fixtures: The fixtures to be filtered.
+    :type fixtures: list[fixman.library.files.FixtureFile]
+
+    :param apps: Include only the provided app names.
+    :type apps: list[str]
+
+    :param groups: Include only the provided group names.
+    :type groups: list[str]
+
+    :param models: Include only the provided model names.
+    :type models: list[str]
+
+    :param skip_readonly: Skip fixtures that are marked read only.
+    :type skip_readonly: bool
+
+    :rtype: list[fixman.library.files.FixtureFile]
+    :returns: The filters that match the given criteria.
+
+    """
     _fixtures = list()
     for f in fixtures:
         if apps is not None and f.app not in apps:
@@ -52,23 +61,6 @@ def filter_fixtures(fixtures, apps=None, groups=None, models=None, skip_readonly
         _fixtures.append(f)
 
     return _fixtures
-
-
-def highlight_code(string, lexer=None):
-    """Highlight (colorize) the given string as Python code.
-
-    :param string: The string to be highlighted.
-    :type string: str
-
-    :param lexer: The pygments lexer to use. Default: ``PythonLexer``
-
-    :rtype: str
-
-    """
-    if lexer is None:
-        lexer = PythonLexer
-
-    return highlight(string, lexer, TerminalFormatter)
 
 
 def load_fixtures(path, **kwargs):

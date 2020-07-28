@@ -3,7 +3,8 @@
 import logging
 import os
 from subprocess import getstatusoutput
-from ..constants import EXIT_OK, LOGGER_NAME
+from superpython.shell import EXIT
+from ..constants import LOGGER_NAME
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -11,9 +12,33 @@ log = logging.getLogger(LOGGER_NAME)
 
 
 class DumpData(object):
+    """A command for dumping fixture data."""
 
-    def __init__(self, app, database=None, export=None, natural_foreign=False, natural_primary=False,
-                 path=None, settings=None):
+    def __init__(self, app, database=None, export=None, natural_foreign=False, natural_primary=False, path=None,
+                 settings=None):
+        """Initialize the command.
+
+        :param app: The name of the app to which the fixture file belongs.
+        :type app: str
+
+        :param database: The database name into which the fixtures are installed.
+        :type database: str
+
+        :param export: ???
+
+        :param natural_foreign: Indicates whether natural foreign keys are used.
+        :type natural_foreign: bool
+
+        :param natural_primary: Indicates whether natural primary keys are used.
+        :type natural_primary: bool
+
+        :param path: The full path to the fixture file, including the file name.
+        :type path: str
+
+        :param settings: The settings to use when loading or dumping data.
+        :type settings: str
+
+        """
         self.app = app
         self.database = database
         self.export = export or app
@@ -25,6 +50,11 @@ class DumpData(object):
         self._status = None
 
     def get_command(self):
+        """Get the command.
+
+        :rtype: str
+
+        """
         a = list()
 
         a.append("(cd source && ./manage.py dumpdata")
@@ -56,25 +86,56 @@ class DumpData(object):
         return " ".join(a)
 
     def get_output(self):
+        """Get the output of the command.
+
+        :rtype: str
+
+        """
         return self._output
 
     def preview(self):
+        """Preview the command statement.
+
+        :rtype: str
+
+        """
         return self.get_command()
 
     def run(self):
+        """Run the command.
+
+        :rtype: bool
+
+        """
         command = self.get_command()
 
         self._status, self._output = getstatusoutput(command)
 
-        if self._status > EXIT_OK:
+        if self._status > EXIT.OK:
             return False
 
         return True
 
 
 class LoadData(object):
+    """A command for loading fixture data."""
 
     def __init__(self, app, database=None, path=None, settings=None):
+        """Initialize the command.
+
+        :param app: The name of the app to which the fixture file belongs.
+        :type app: str
+
+        :param database: The database name into which the fixtures are installed.
+        :type database: str
+
+        :param path: The full path to the fixture file, including the file name.
+        :type path: str
+
+        :param settings: The settings to use when loading or dumping data.
+        :type settings: str
+
+        """
         self.app = app
         self.database = database
         self.path = path or os.path.join("../fixtures", app, "initial.json")
@@ -83,6 +144,11 @@ class LoadData(object):
         self._status = None
 
     def get_command(self):
+        """Get the command.
+
+        :rtype: str
+
+        """
         a = list()
 
         a.append("(cd source && ./manage.py loaddata")
@@ -98,17 +164,32 @@ class LoadData(object):
         return " ".join(a)
 
     def get_output(self):
+        """Get the output of the command.
+
+        :rtype: str
+
+        """
         return self._output
 
     def preview(self):
+        """Preview the command.
+
+        :rtype: str
+
+        """
         return self.get_command()
 
     def run(self):
+        """Run the command.
+
+        :rtype: str
+
+        """
         command = self.get_command()
 
         self._status, self._output = getstatusoutput(command)
 
-        if self._status > EXIT_OK:
+        if self._status > EXIT.OK:
             return False
 
         return True
@@ -152,7 +233,7 @@ class Fixture(object):
         self.output = output
         self.status = status
 
-        if status > EXIT_OK:
+        if status > EXIT.OK:
             return False
 
         return True
