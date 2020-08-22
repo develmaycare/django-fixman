@@ -23,6 +23,7 @@ dist:
 
 #> docs - Generate documentation.
 docs: lines
+	cd docs && make dirhtml;
 	cd docs && make html;
 	cd docs && make coverage;
 	open docs/build/coverage/python.txt;

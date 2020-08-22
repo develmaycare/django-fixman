@@ -3,7 +3,7 @@
 import logging
 import os
 from subprocess import getstatusoutput
-from superpython.shell import EXIT
+from commonkit.shell import EXIT
 from ..constants import LOGGER_NAME
 
 log = logging.getLogger(LOGGER_NAME)

@@ -2,8 +2,8 @@
 
 import logging
 import os
-from superpython.shell import EXIT
-from superpython.utils import highlight_code, read_file, write_file
+from commonkit import highlight_code, read_file, write_file
+from commonkit.shell import EXIT
 from subprocess import getstatusoutput
 from ..library.commands import DumpData, LoadData
 from ..constants import LOGGER_NAME

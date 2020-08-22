@@ -23,10 +23,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "superpython",
+        "commonkit",
+        "pygments",
     ],
     dependency_links=[
-        "https://github.com/develmaycare/superpython",
+        "https://github.com/develmaycare/python-commonkit",
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

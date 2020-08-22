@@ -6,7 +6,7 @@ Coverage Requirements
 See `current coverage report <coverage/index.html>`_.
 
 .. csv-table:: Lines of Code
-    :file: _data/cloc.csv
+    :file: ../_data/cloc.csv
 
 Running Tests
 -------------

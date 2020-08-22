@@ -3,7 +3,7 @@
 from configparser import ConfigParser
 import logging
 import os
-from superpython.utils import smart_cast
+from commonkit import smart_cast
 from .constants import LOGGER_NAME
 
 log = logging.getLogger(LOGGER_NAME)

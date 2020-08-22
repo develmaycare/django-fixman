@@ -1,8 +1,9 @@
 # Imports
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from superpython.logging import LoggingHelper
-from ..constants import EXIT_FAILURE, EXIT_UNKNOWN, LOGGER_NAME
+from commonkit.logging import LoggingHelper
+from commonkit.shell import EXIT
+from ..constants import LOGGER_NAME
 from ..variables import CURRENT_WORKING_DIRECTORY
 from . import initialize
 from . import subcommands
@@ -19,13 +20,13 @@ def main_command():
     """Work with Django fixtures."""
 
     __author__ = "Shawn Davis <shawn@develmaycare.com>"
-    __date__ = "2020-07-28"
+    __date__ = "2020-08-22"
     __help__ = """NOTES
 
 Work with Django fixtures.
 
     """
-    __version__ = "0.10.0-d"
+    __version__ = "0.11.0-d"
 
     # Main argument parser from which sub-commands are created.
     parser = ArgumentParser(description=__doc__, epilog=__help__, formatter_class=RawDescriptionHelpFormatter)
@@ -70,7 +71,7 @@ Work with Django fixtures.
     project_root = args.project_root or CURRENT_WORKING_DIRECTORY
     log.debug("Project root: %s" % project_root)
 
-    exit_code = EXIT_UNKNOWN
+    exit_code = EXIT.UNKNOWN
     if command in ("dd", "dump", "dumpdata"):
         exit_code = subcommands.dumpdata(
             args.path,
