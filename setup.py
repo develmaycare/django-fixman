@@ -23,12 +23,12 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "commonkit",
         "pygments",
+        "commonkit @ git+https://github.com/develmaycare/python-commonkit",
     ],
-    dependency_links=[
-        "https://github.com/develmaycare/python-commonkit",
-    ],
+    # dependency_links=[
+    #     "https://github.com/develmaycare/python-commonkit",
+    # ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
