@@ -10,7 +10,9 @@ def subcommands(subparsers):
     commands.dumpdata()
     commands.init()
     commands.inspect()
+    commands.list()
     commands.loaddata()
+    commands.scan()
 
 # Classes
 
@@ -29,23 +31,22 @@ class SubCommands(object):
             help="Export Django fixtures."
         )
 
+        self._add_fixture_options(sub)
         self._add_common_options(sub)
 
     def init(self):
         """Create the init sub-command."""
-        # Arguments do NOT use _add_common_options() because this sub-command doesn't utilize the common options for
-        # dump, load, etc. So common options such as -D and -p have to be added here.
         sub = self.subparsers.add_parser(
             "init",
             help="Initialize fixture management."
         )
 
         sub.add_argument(
-            "-D",
-            "--debug",
-            action="store_true",
-            dest="debug_enabled",
-            help="Enable debug output."
+            "-b=",
+            "--base=",
+            default="source",
+            dest="base_directory",
+            help="The base directory within the project where fixture files may be located."
         )
 
         sub.add_argument(
@@ -58,27 +59,14 @@ class SubCommands(object):
         )
 
         sub.add_argument(
-            "-p",
-            "--preview",
-            action="store_true",
-            dest="preview_enabled",
-            help="Preview the commands."
-        )
-
-        sub.add_argument(
-            "-r=",
-            "--project-root=",
-            dest="project_root",
-            help="The path to the project."
-        )
-
-        sub.add_argument(
             "-S",
             "--scan",
             action="store_true",
             dest="scan_enabled",
             help="Scan the current directory (or project root) to find fixture files to be added to the config."
         )
+
+        self._add_common_options(sub)
 
     def inspect(self):
         """Create the inspect sub-command."""
@@ -88,6 +76,20 @@ class SubCommands(object):
             help="Display Django fixtures."
         )
 
+        self._add_fixture_options(sub)
+        self._add_common_options(sub)
+
+    def list(self):
+        """Create the list sub-command."""
+        # Arguments do NOT use _add_common_options() because this sub-command doesn't utilize the common options for
+        # dump, load, etc. So common options such as -D and -p have to be added here.
+        sub = self.subparsers.add_parser(
+            "list",
+            aliases=["ls"],
+            help="List the configured fixtures."
+        )
+
+        self._add_fixture_options(sub)
         self._add_common_options(sub)
 
     def loaddata(self):
@@ -106,29 +108,29 @@ class SubCommands(object):
             help="Export to a bash script."
         )
 
+        self._add_fixture_options(sub)
         self._add_common_options(sub)
 
-    # noinspection PyMethodMayBeStatic
-    def _add_common_options(self, sub):
-        """Add the common switches to a given sub-command instance.
+    def scan(self):
+        """Create the scan sub-command."""
+        # Arguments do NOT use _add_common_options() because this sub-command doesn't utilize the common options for
+        # dump, load, etc. So common options such as -D and -p have to be added here.
+        sub = self.subparsers.add_parser(
+            "scan",
+            help="Scan for fixture files in project source."
+        )
 
-        :param sub: The sub-command instance.
+        self._add_fixture_options(sub)
+        self._add_common_options(sub)
 
-        """
+    def _add_fixture_options(self, sub):
+        """Add the common options for the fixture dump/inspect/load commands."""
         sub.add_argument(
             "-A=",
             "--app-name=",
             action="append",
             dest="app_names",
             help="Only work with this app. May be used multiple times."
-        )
-
-        sub.add_argument(
-            "-D",
-            "--debug",
-            action="store_true",
-            dest="debug_enabled",
-            help="Enable debug output."
         )
 
         sub.add_argument(
@@ -156,6 +158,29 @@ class SubCommands(object):
         )
 
         sub.add_argument(
+            "-s=",
+            "--settings=",
+            dest="settings",
+            help="The dotted path to the Django settings file."
+        )
+
+    # noinspection PyMethodMayBeStatic
+    def _add_common_options(self, sub):
+        """Add the common switches to a given sub-command instance.
+
+        :param sub: The sub-command instance.
+
+        """
+
+        sub.add_argument(
+            "-D",
+            "--debug",
+            action="store_true",
+            dest="debug_enabled",
+            help="Enable debug output."
+        )
+
+        sub.add_argument(
             "-p",
             "--preview",
             action="store_true",
@@ -168,11 +193,4 @@ class SubCommands(object):
             "--project-root=",
             dest="project_root",
             help="The path to the project."
-        )
-
-        sub.add_argument(
-            "-s=",
-            "--settings=",
-            dest="settings",
-            help="The dotted path to the Django settings file."
         )

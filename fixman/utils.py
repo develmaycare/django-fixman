@@ -13,6 +13,7 @@ log = logging.getLogger(LOGGER_NAME)
 __all__ = (
     "filter_fixtures",
     "load_fixtures",
+    "scan_fixtures",
 )
 
 # Functions
@@ -116,3 +117,27 @@ def load_fixtures(path, **kwargs):
         fixtures.append(FixtureFile(app_label, **_kwargs))
 
     return fixtures
+
+
+def scan_fixtures(path):
+    """Scan for fixture files on the given path.
+
+    :param path: The path to scan.
+    :type path: str
+
+    :rtype: list
+    :returns: A list of three-element tuples; the app name, file name, and relative path.
+
+    """
+    results = list()
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if not f.endswith(".json"):
+                continue
+
+            relative_path = root.replace(path + "/", "")
+            app_name = os.path.basename(os.path.dirname(relative_path))
+
+            results.append((app_name, f, relative_path))
+
+    return results

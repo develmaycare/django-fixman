@@ -2,12 +2,12 @@
 
 import logging
 import os
-from commonkit import highlight_code, read_file, write_file
-from commonkit.shell import EXIT
+from commonkit import highlight_code, read_file, truncate, write_file
+from commonkit.shell import EXIT, TABLE_FORMAT, Table
 from subprocess import getstatusoutput
 from ..library.commands import DumpData, LoadData
 from ..constants import LOGGER_NAME
-from ..utils import filter_fixtures, load_fixtures
+from ..utils import filter_fixtures, load_fixtures, scan_fixtures
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -69,7 +69,7 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
     return EXIT.ERROR
 
 
-def init(force_enabled=False, preview_enabled=False, project_root=None, scan_enabled=False):
+def init(base_directory="source", force_enabled=False, preview_enabled=False, project_root=None, scan_enabled=False):
     # The base path is where global fixtures and the config.ini file are located.
     base_path = os.path.join(project_root, "deploy", "fixtures")
 
@@ -93,28 +93,37 @@ def init(force_enabled=False, preview_enabled=False, project_root=None, scan_ena
 
     # Scan for fixture files.
     if scan_enabled:
-        path = os.path.join(project_root, "source")
+        path = os.path.join(project_root, base_directory)
         if not os.path.exists(path):
             log.error("Path does not exist: %s" % path)
             return EXIT.ERROR
 
         log.info("Scanning the project for fixture files.")
-        for root, directories, files in os.walk(path):
-            for f in files:
-                if not f.endswith(".json"):
-                    continue
+        results = scan_fixtures(path)
+        for app_name, file_name, relative_path in results:
+            log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, file_name))
 
-                relative_path = root.replace(path + "/", "")
-                # print(root.replace(path + "/", ""), f)
+            output.append("[%s]" % app_name)
+            output.append("file_name = %s" % file_name)
+            output.append("path = %s" % relative_path)
+            output.append("")
 
-                app_name = os.path.basename(os.path.dirname(relative_path))
-
-                log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, f))
-
-                output.append("[%s]" % app_name)
-                output.append("file_name = %s" % f)
-                output.append("path = %s" % relative_path)
-                output.append("")
+        # for root, directories, files in os.walk(path):
+        #     for f in files:
+        #         if not f.endswith(".json"):
+        #             continue
+        #
+        #         relative_path = root.replace(path + "/", "")
+        #         # print(root.replace(path + "/", ""), f)
+        #
+        #         app_name = os.path.basename(os.path.dirname(relative_path))
+        #
+        #         log.debug("Found fixtures for %s app: %s/%s" % (app_name, relative_path, f))
+        #
+        #         output.append("[%s]" % app_name)
+        #         output.append("file_name = %s" % f)
+        #         output.append("path = %s" % relative_path)
+        #         output.append("")
     else:
         output.append(";[app_name]")
         output.append(";file_name = fixture-file-name.json")
@@ -155,6 +164,50 @@ def inspect(path, apps=None, groups=None, models=None, project_root=None):
         print("-" * 120)
 
     return exit_code
+
+
+def ls(path, apps=None, groups=None, models=None, project_root=None):
+    fixtures = load_fixtures(path, project_root=project_root)
+    if not fixtures:
+        return EXIT.ERROR
+
+    headings = [
+        "App",
+        "File Name",
+        "Path",
+        "Read Only",
+        "Group",
+        "Comment",
+    ]
+    table = Table(headings, output_format=TABLE_FORMAT.SIMPLE)
+
+    _fixtures = filter_fixtures(fixtures, apps=apps, groups=groups, models=models)
+    for f in _fixtures:
+        readonly = "no"
+        if f.readonly:
+            readonly = "yes"
+
+        comment = "None."
+        if f.comment:
+            comment = truncate(f.comment)
+
+        values = [
+            f.app,
+            f.file_name,
+            f.path,
+            readonly,
+            f.group,
+            comment
+        ]
+        table.add(values)
+
+    print("")
+    print("Configured Fixtures")
+    print("")
+    print(table)
+    print("")
+
+    return EXIT.OK
 
 
 def loaddata(path, apps=None, database=None, groups=None, models=None, preview_enabled=False, project_root=None,
@@ -204,6 +257,32 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
         return EXIT.OK
 
     return EXIT.ERROR
+
+
+def scan(base_directory="source", project_root=None):
+    path = os.path.join(project_root, base_directory)
+    if not os.path.exists(path):
+        log.error("Path does not exist: %s" % path)
+        return EXIT.ERROR
+
+    headings = [
+        "App Name",
+        "File Name",
+        "Path",
+    ]
+    table = Table(headings, output_format=TABLE_FORMAT.SIMPLE)
+
+    results = scan_fixtures(path)
+    for values in results:
+        table.add(values)
+
+    print("")
+    print("Fixtures Found in Project")
+    print("")
+    print(table)
+    print("")
+
+    return EXIT.OK
 
 '''
 

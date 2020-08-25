@@ -7,3 +7,7 @@ def test_filter_fixtures():
 
 def test_load_fixtures():
     pass
+
+
+def test_scan_fixtures():
+    pass
