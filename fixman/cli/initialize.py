@@ -120,7 +120,22 @@ class SubCommands(object):
             help="Scan for fixture files in project source."
         )
 
-        self._add_fixture_options(sub)
+        sub.add_argument(
+            "-P=",
+            "--path=",
+            default="deploy/fixtures/config.ini",
+            dest="path",
+            help="The path to the fixtures INI file. Default: deploy/fixtures/config.ini"
+        )
+
+        sub.add_argument(
+            "-S=",
+            "--source=",
+            default="source",
+            dest="base_directory",
+            help="The base directory in project root from which the scan will take place."
+        )
+
         self._add_common_options(sub)
 
     def _add_fixture_options(self, sub):

@@ -259,22 +259,45 @@ def loaddata(path, apps=None, database=None, groups=None, models=None, preview_e
     return EXIT.ERROR
 
 
-def scan(base_directory="source", project_root=None):
-    path = os.path.join(project_root, base_directory)
-    if not os.path.exists(path):
-        log.error("Path does not exist: %s" % path)
+def scan(path, base_directory="source", project_root=None):
+    configured_fixtures = load_fixtures(path, project_root=project_root)
+
+
+    search_path = os.path.join(project_root, base_directory)
+    if not os.path.exists(search_path):
+        log.error("Path does not exist: %s" % search_path)
         return EXIT.ERROR
 
     headings = [
         "App Name",
         "File Name",
         "Path",
+        "Configured",
     ]
     table = Table(headings, output_format=TABLE_FORMAT.SIMPLE)
 
-    results = scan_fixtures(path)
+    results = scan_fixtures(search_path)
     for values in results:
-        table.add(values)
+        configured = "no"
+        for cf in configured_fixtures:
+            conditions = [
+                cf.app == values[0],
+                cf.file_name == values[1],
+                cf.path == values[2],
+            ]
+            if all(conditions):
+                configured = "yes"
+                break
+            elif any(conditions):
+                configured = "maybe"
+                break
+            else:
+                configured = "no"
+
+        _values = list(values)
+        _values.append(configured)
+
+        table.add(_values)
 
     print("")
     print("Fixtures Found in Project")

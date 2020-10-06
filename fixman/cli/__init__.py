@@ -5,6 +5,7 @@ from commonkit.logging import LoggingHelper
 from commonkit.shell import EXIT
 from ..constants import LOGGER_NAME
 from ..variables import CURRENT_WORKING_DIRECTORY
+from ..version import DATE as VERSION_DATE, VERSION
 from . import initialize
 from . import subcommands
 
@@ -20,13 +21,13 @@ def main_command():
     """Work with Django fixtures."""
 
     __author__ = "Shawn Davis <shawn@develmaycare.com>"
-    __date__ = "2020-08-25"
+    __date__ = VERSION_DATE
     __help__ = """NOTES
 
 Work with Django fixtures.
 
     """
-    __version__ = "0.12.0-d"
+    __version__ = VERSION
 
     # Main argument parser from which sub-commands are created.
     parser = ArgumentParser(description=__doc__, epilog=__help__, formatter_class=RawDescriptionHelpFormatter)
@@ -117,7 +118,11 @@ Work with Django fixtures.
             project_root=project_root
         )
     elif command == "scan":
-        exit_code = subcommands.scan(project_root=project_root)
+        exit_code = subcommands.scan(
+            args.path,
+            base_directory=args.base_directory,
+            project_root=project_root
+        )
     else:
         log.error("Unsupported command: %s" % command)
 

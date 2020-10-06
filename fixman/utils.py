@@ -136,6 +136,9 @@ def scan_fixtures(path):
                 continue
 
             relative_path = root.replace(path + "/", "")
+            if relative_path.startswith("static") or relative_path.startswith("theme"):
+                continue
+
             app_name = os.path.basename(os.path.dirname(relative_path))
 
             results.append((app_name, f, relative_path))
