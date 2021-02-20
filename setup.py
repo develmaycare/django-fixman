@@ -24,7 +24,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "pygments",
-        "commonkit @ git+https://github.com/develmaycare/python-commonkit",
+        # "commonkit @ git+https://github.com/develmaycare/python-commonkit",
+        "python-commonkit",
     ],
     # dependency_links=[
     #     "https://github.com/develmaycare/python-commonkit",
