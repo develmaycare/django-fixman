@@ -47,6 +47,7 @@ def filter_fixtures(fixtures, apps=None, groups=None, models=None, skip_readonly
             log.debug("Skipping %s app (not in apps list)." % f.app)
             continue
 
+        # BUG: Model filter will return on a partial match; Group and Grouping.
         if models is not None and f.model is not None and f.model not in models:
             log.debug("Skipping %s model (not in models list)." % f.model)
             continue
@@ -131,12 +132,12 @@ def scan_fixtures(path):
     """
     results = list()
     for root, dirs, files in os.walk(path):
+        relative_path = root.replace(path + "/", "")
+        if relative_path.startswith("static") or relative_path.startswith("theme"):
+            continue
+
         for f in files:
             if not f.endswith(".json"):
-                continue
-
-            relative_path = root.replace(path + "/", "")
-            if relative_path.startswith("static") or relative_path.startswith("theme"):
                 continue
 
             app_name = os.path.basename(os.path.dirname(relative_path))

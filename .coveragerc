@@ -4,6 +4,8 @@ omit =
     assets/*
     docs/*
     fixman/cli/*
+    fixman/variables.py
+    fixman/version.py
     tests/*
     tmp/*
     tmp.*
