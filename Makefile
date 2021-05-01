@@ -6,6 +6,9 @@ CLOC_PATH := fixman
 # The directory where test coverage is generated.
 COVERAGE_PATH := docs/build/html/coverage
 
+# The path to source code to be counted with cloc.
+PACKAGE_NAME := fixman
+
 # Attempt to load a local makefile which may override any of the values above.
 -include local.makefile
 
@@ -19,7 +22,15 @@ help:
 
 #> dist - Create a distribution of the package.
 dist:
+	cp DESCRIPTION.txt $(PACKAGE_NAME)/;
+	cp LICENSE.txt $(PACKAGE_NAME)/;
+	cp VERSION.txt $(PACKAGE_NAME)/;
+	@rm -Rf build/*;
+	@rm -Rf dist/*;
+	@rm -Rf *.egg-info;
 	python setup.py sdist bdist_wheel;
+	twine check dist/*;
+	rm $(PACKAGE_NAME)/*.txt;
 
 #> docs - Generate documentation.
 docs: lines
@@ -37,13 +48,18 @@ clean:
 lines:
 	rm -f docs/source/_data/cloc.csv;
 	echo "files,language,blank,comment,code" > docs/source/_data/cloc.csv;
-	cloc $(CLOC_PATH) --csv --quiet --unix --report-file=tmp.csv 
+	cloc $(PACKAGE_NAME) --csv --quiet --unix --report-file=tmp.csv 
 	tail -n +2 tmp.csv >> docs/source/_data/cloc.csv;
 	rm tmp.csv;
 
+#> publish - Publish to PYPI.
+publish:
+	twine upload --repository-url https://upload.pypi.org/legacy/ dist/*;
+	#twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
 #> secure - Run security checks on the code base.
 secure:
-	bandit -r $(CLOC_PATH);
+	bandit -r $(PACKAGE_NAME);
 
 #> tests - Run unit tests and generate coverage report.
 tests:
