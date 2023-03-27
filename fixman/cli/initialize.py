@@ -123,9 +123,9 @@ class SubCommands(object):
         sub.add_argument(
             "-P=",
             "--path=",
-            default="deploy/fixtures/config.ini",
+            default="fixtures/config.ini",
             dest="path",
-            help="The path to the fixtures INI file. Default: deploy/fixtures/config.ini"
+            help="The path to the fixtures INI file. Default: fixtures/config.ini"
         )
 
         sub.add_argument(
@@ -167,9 +167,9 @@ class SubCommands(object):
         sub.add_argument(
             "-P=",
             "--path=",
-            default="deploy/fixtures/config.ini",
+            default="fixtures/config.ini",
             dest="path",
-            help="The path to the fixtures INI file. Default: deploy/fixtures/config.ini"
+            help="The path to the fixtures INI file. Default: fixtures/config.ini"
         )
 
         sub.add_argument(
