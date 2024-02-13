@@ -38,7 +38,7 @@ docs: lines
 	cd docs && make html;
 	cd docs && make coverage;
 	open docs/build/coverage/python.txt;
-	open docs/build/html/index.html;
+	firefox docs/build/html/index.html;
 
 #> clean - Remove pyc files.
 clean:
@@ -65,5 +65,5 @@ secure:
 tests:
 	coverage run --source=. -m pytest -s;
 	coverage html --directory=$(COVERAGE_PATH);
-	open $(COVERAGE_PATH)/index.html;
+	firefox $(COVERAGE_PATH)/index.html;
 

@@ -27,6 +27,7 @@ setup(
         "pygments",
         # "commonkit @ git+https://github.com/develmaycare/python-commonkit",
         "python-commonkit",
+        "tabulate",
     ],
     # dependency_links=[
     #     "https://github.com/develmaycare/python-commonkit",

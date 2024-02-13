@@ -158,7 +158,7 @@ class SubCommands(object):
 
         sub.add_argument(
             "-M=",
-            "--model-name=",
+            "--model=",
             action="append",
             dest="model_names",
             help="Only work with this model. May be used multiple times."

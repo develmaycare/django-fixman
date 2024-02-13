@@ -8,6 +8,7 @@ from subprocess import getstatusoutput
 from ..library.commands import DumpData, LoadData
 from ..constants import LOGGER_NAME
 from ..utils import filter_fixtures, load_fixtures, scan_fixtures
+from ..variables import CURRENT_WORKING_DIRECTORY
 
 log = logging.getLogger(LOGGER_NAME)
 
@@ -71,7 +72,7 @@ def dumpdata(path, apps=None, database=None, groups=None, models=None, natural_f
 
 def init(base_directory="source", force_enabled=False, preview_enabled=False, project_root=None, scan_enabled=False):
     # The base path is where global fixtures and the config.ini file are located.
-    base_path = os.path.join(project_root, "deploy", "fixtures")
+    base_path = os.path.join(project_root or CURRENT_WORKING_DIRECTORY, "fixtures")
 
     if not os.path.exists(base_path):
         log.info("Creating fixtures directory.")
